@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "load": "node scripts/generateLoad.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
