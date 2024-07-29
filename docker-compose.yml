@@ -3,18 +3,26 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "127.0.0.1:80:80"
+      - "80:80"
+      - "127.0.0.1:8080:8080"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - app
+      - grafana
+      - influxdb
+      - elasticsearch
 
-  mongo:
-    image: mongo:4.2
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
@@ -30,35 +38,46 @@ services:
     working_dir: /usr/src/app
     command: npm start
     depends_on:
-      - mongo
+      - mongodb
       - elasticsearch
 
   telegraf:
-    image: telegraf:1.18-alpine
+    image: telegraf:latest
+    user: root
+    privileged: true
     volumes:
     - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - influxdb
+      - nginx
+      - app
+      - mongodb
+      - elasticsearch
+      - grafana
     links:
       - influxdb
     ports:
     - '127.0.0.1:8125:8125/udp'
+    entrypoint: /bin/sh -c "chmod 666 /var/run/docker.sock && /entrypoint.sh telegraf"
 
   influxdb:
-    image: influxdb:1.8-alpine
+    image: influxdb:1.8
     env_file: configuration.env
     ports:
       - '127.0.0.1:8086:8086'
     volumes:
       - ./:/imports
       - influxdb_data:/var/lib/influxdb
+    entrypoint: sh -c "influxd run -config /etc/influxdb/influxdb.conf & until influx -host localhost -execute 'CREATE DATABASE telegraf'; do echo waiting for influxdb; sleep 1; done; wait"
 
   grafana:
     image: grafana/grafana:8.0.2
     depends_on:
       - influxdb
     env_file: configuration.env
+    environment:
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
     links:
       - influxdb
     ports:

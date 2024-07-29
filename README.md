@@ -26,6 +26,11 @@ $ docker-compose up
 - Password: admin 
 - Database: influx
 
+## Generate Load
+```
+cd app/scripts
+node generateLoad.js
+```
 
 Run the influx client:
 
@@ -58,7 +63,7 @@ Killed by Ctrl+C
 ```
 #### Generating read load from MongoDB
 ```bash
-ab -n 1000 -c 10 http://localhost/mongo
+ab -n 100 -c 10 http://localhost/mongo
 Killed by Ctrl+C
 ```
 
@@ -66,11 +71,11 @@ Killed by Ctrl+C
 
 #### Generating a record load to Elasticsearch
 ```bash
-ab -n 1000 -c 10 -p post_data.json -T application/json http://localhost/elasticsearch
+ab -n 100 -c 10 -p post_data.json -T application/json http://localhost/elasticsearch
 Killed by Ctrl+C
 ```
 #### Generating read load with Elasticsearch
 ```bash
-ab -n 1000 -c 10 http://localhost/elasticsearch
+ab -n 100 -c 10 http://localhost/elasticsearch
 Killed by Ctrl+C
 ```

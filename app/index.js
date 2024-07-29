@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 const { Client } = require('@elastic/elasticsearch');
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // MongoDB конфігурація
 const mongoUrl = 'mongodb://localhost:27017';
